@@ -20,3 +20,13 @@ install:
 uninstall:
 	pipenv clean
 
+alembic-start: # apenas no inicio do projeto, este comando apaga todos os migrations
+	alembic init migrations
+
+make-migrations: # analisa e gera as migrações
+	alembic revision --autogenerate -m "$(M)"
+
+migrate: # executa a migração
+	alembic upgrade head
+
+
