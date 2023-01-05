@@ -1,0 +1,33 @@
+version: "3.2"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq_boleto'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+
+  web:
+      build: .
+      container_name: boleto_api
+      command: uvicorn --port 80 --host 0.0.0.0 main:app
+      env_file:
+        - .env
+      volumes:
+        - .:/usr/src/app
+      ports:
+        - "8000:80"
+
+  celery:
+    build: .
+    command: celery -A task.app worker -l info --beat
+    volumes:
+        - .:/usr/src/app
+    env_file:
+        - .env
+    depends_on:
+        - web
+        - rabbitmq
